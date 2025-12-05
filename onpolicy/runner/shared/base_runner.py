@@ -90,7 +90,7 @@ class Runner(object):
                                         self.envs.observation_space[0],
                                         share_observation_space,
                                         self.envs.action_space[0])
-        if self.env_name == 'MPE' or self.env_name == 'Matrix':
+        if self.env_name == 'MPE' or self.env_name == 'Matrix' or self.env_name == 'VMAS':
             self.name =  self.all_args.scenario_name + '-' + str(self.all_args.beta) + '-' + str(self.all_args.seed) + '.txt'
         if self.env_name == 'StarCraft2':
             self.name =  self.all_args.map_name + '-' + str(self.all_args.beta) + '-' + str(self.all_args.seed) + '.txt'

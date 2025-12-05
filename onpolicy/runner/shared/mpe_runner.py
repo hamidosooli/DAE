@@ -59,7 +59,7 @@ class MPERunner(Runner):
                                 self.num_env_steps,
                                 int(total_num_steps / (end - start))))
 
-                if self.env_name == "MPE":
+                if self.env_name == "MPE" or self.env_name == "VMAS":
                     env_infos = {}
                     for agent_id in range(self.num_agents):
                         idv_rews = []
@@ -72,7 +72,7 @@ class MPERunner(Runner):
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
                 print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
                 self.log_train(train_infos, total_num_steps)
-                if self.env_name == "MPE":
+                if self.env_name == "MPE" or self.env_name == "VMAS":
                     self.log_env(env_infos, total_num_steps)
                 f = open(self.name,'a')
                 f.write(str(train_infos["average_episode_rewards"])+'\n')
