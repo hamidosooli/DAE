@@ -1,0 +1,138 @@
+program: onpolicy/scripts/wandb_sweep_wrapper.py
+method: random
+metric:
+  goal: minimize
+  name: value_loss
+
+parameters:
+  # Environment parameters
+  env_name:
+    value: VMAS
+  scenario_name:
+    value: navigation
+  num_agents:
+    value: 2
+  episode_length:
+    value: 100
+  
+  # Algorithm parameters
+  algorithm_name:
+    value: rmappo
+  experiment_name:
+    value: sweep_rmappo
+  seed:
+    value: 1
+  
+  # Training parameters
+  n_training_threads:
+    value: 1
+  n_rollout_threads:
+    values: [8, 16, 32]
+  num_env_steps:
+    value: 10000000
+  
+  # Network parameters
+  hidden_size:
+    values: [64, 128, 256]
+  layer_N:
+    values: [1, 2]
+  use_ReLU:
+    value: true
+  use_valuenorm:
+    values: [true, false]
+  use_popart:
+    values: [true, false]
+  use_feature_normalization:
+    value: true
+  use_orthogonal:
+    value: true
+  gain:
+    values: [0.01, 0.1]
+  
+  # Recurrent parameters
+  use_recurrent_policy:
+    value: true
+  use_naive_recurrent_policy:
+    value: false
+  recurrent_N:
+    values: [1, 2]
+  data_chunk_length:
+    values: [10, 20]
+  
+  # Optimizer parameters
+  lr:
+    values: [1e-4, 3e-4, 5e-4, 7e-4, 1e-3]
+  critic_lr:
+    values: [1e-4, 3e-4, 5e-4, 7e-4, 1e-3]
+  opti_eps:
+    value: 1e-5
+  weight_decay:
+    values: [0, 1e-5]
+  
+  # PPO parameters
+  ppo_epoch:
+    values: [5, 10, 15]
+  clip_param:
+    values: [0.1, 0.2, 0.3]
+  num_mini_batch:
+    values: [1, 2, 4]
+  entropy_coef:
+    values: [0.001, 0.01, 0.1]
+  value_loss_coef:
+    values: [0.5, 1.0, 2.0]
+  use_max_grad_norm:
+    value: true
+  max_grad_norm:
+    values: [0.5, 1.0, 10.0]
+  use_gae:
+    value: true
+  gamma:
+    values: [0.95, 0.99, 0.999]
+  gae_lambda:
+    values: [0.9, 0.95, 0.99]
+  use_huber_loss:
+    value: true
+  huber_delta:
+    values: [1.0, 10.0]
+  use_value_active_masks:
+    value: false
+  use_policy_active_masks:
+    value: true
+  
+  # Training settings
+  use_centralized_V:
+    value: true
+  share_policy:
+    value: true
+  use_linear_lr_decay:
+    values: [true, false]
+  
+  # Logging and evaluation
+  # Note: use_wandb is handled specially in the wrapper (always enabled for sweeps)
+  user_name:
+    value: mappo
+  save_interval:
+    value: 1
+  log_interval:
+    value: 5
+  use_eval:
+    value: true
+  eval_interval:
+    value: 25
+  eval_episodes:
+    value: 32
+  
+  # DAE specific parameters
+  beta:
+    values: [0.0, 0.1, 0.5, 1.0]
+  rew_hidden_size:
+    values: [64, 128, 256]
+  num_rew:
+    values: [1, 2, 3]
+  
+  # Hardware
+  cuda:
+    value: true
+  cuda_deterministic:
+    value: true
+
