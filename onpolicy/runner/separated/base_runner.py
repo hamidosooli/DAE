@@ -2,10 +2,12 @@
 import time
 import wandb
 import os
+import json
 import numpy as np
 from itertools import chain
 import torch
 from tensorboardX import SummaryWriter
+from collections import defaultdict
 
 from onpolicy.utils.separated_buffer import SeparatedReplayBuffer
 from onpolicy.utils.util import update_linear_schedule
@@ -56,6 +58,7 @@ class Runner(object):
         else:
             if self.use_wandb:
                 self.save_dir = str(wandb.run.dir)
+                self.run_dir = str(wandb.run.dir)
             else:
                 self.run_dir = config["run_dir"]
                 self.log_dir = str(self.run_dir / 'logs')
@@ -98,6 +101,9 @@ class Runner(object):
                                        self.envs.action_space[agent_id])
             self.buffer.append(bu)
             self.trainer.append(tr)
+        
+        # Initialize metrics storage for JSON saving (similar to DISSCv2)
+        self.metrics = defaultdict(lambda: {"steps": [], "values": []})
             
     def run(self):
         raise NotImplementedError
@@ -149,6 +155,17 @@ class Runner(object):
         for agent_id in range(self.num_agents):
             for k, v in train_infos[agent_id].items():
                 agent_k = "agent%i/" % agent_id + k
+                
+                # Convert to float if numpy/torch type
+                if isinstance(v, (np.ndarray, np.generic)):
+                    v = float(v)
+                elif isinstance(v, torch.Tensor):
+                    v = float(v.item())
+                
+                # Store in metrics dictionary for JSON saving
+                self.metrics[agent_k]["steps"].append(int(total_num_steps))
+                self.metrics[agent_k]["values"].append(v)
+                
                 if self.use_wandb:
                     wandb.log({agent_k: v}, step=total_num_steps)
                 else:
@@ -157,7 +174,41 @@ class Runner(object):
     def log_env(self, env_infos, total_num_steps):
         for k, v in env_infos.items():
             if len(v) > 0:
+                mean_val = float(np.mean(v))
+                
+                # Store in metrics dictionary for JSON saving
+                self.metrics[k]["steps"].append(int(total_num_steps))
+                self.metrics[k]["values"].append(mean_val)
+                
                 if self.use_wandb:
-                    wandb.log({k: np.mean(v)}, step=total_num_steps)
+                    wandb.log({k: mean_val}, step=total_num_steps)
                 else:
-                    self.writter.add_scalars(k, {k: np.mean(v)}, total_num_steps)
+                    self.writter.add_scalars(k, {k: mean_val}, total_num_steps)
+    
+    def save_metrics_json(self):
+        """
+        Save metrics to JSON file in DISSCv2 format.
+        Saves to metrics.json in the run directory.
+        """
+        # Determine run_dir
+        if hasattr(self, 'run_dir'):
+            run_dir = str(self.run_dir) if not isinstance(self.run_dir, str) else self.run_dir
+        elif self.use_wandb:
+            run_dir = str(wandb.run.dir)
+        else:
+            run_dir = str(self.save_dir).replace('/models', '')
+        
+        metrics_file = os.path.join(run_dir, "metrics.json")
+        
+        # Convert defaultdict to regular dict and ensure all values are JSON serializable
+        metrics_dict = {}
+        for k, v in self.metrics.items():
+            metrics_dict[k] = {
+                "steps": [int(s) for s in v["steps"]],
+                "values": [float(val) for val in v["values"]]
+            }
+        
+        with open(metrics_file, 'w') as f:
+            json.dump(metrics_dict, f, indent=2)
+        
+        print(f"Metrics saved to {metrics_file}")

@@ -1,9 +1,11 @@
 import wandb
 import os
+import json
 import numpy as np
 import torch
 from tensorboardX import SummaryWriter
 from onpolicy.utils.shared_buffer import SharedReplayBuffer
+from collections import defaultdict
 
 def _t2n(x):
     """Convert torch tensor to a numpy array."""
@@ -94,6 +96,9 @@ class Runner(object):
             self.name =  self.all_args.scenario_name + '-' + str(self.all_args.beta) + '-' + str(self.all_args.seed) + '.txt'
         if self.env_name == 'StarCraft2':
             self.name =  self.all_args.map_name + '-' + str(self.all_args.beta) + '-' + str(self.all_args.seed) + '.txt'
+        
+        # Initialize metrics storage for JSON saving (similar to DISSCv2)
+        self.metrics = defaultdict(lambda: {"steps": [], "values": []})
 
     def run(self):
         """Collect training data, perform training updates, and evaluate policy."""
@@ -153,6 +158,16 @@ class Runner(object):
         :param total_num_steps: (int) total number of training env steps.
         """
         for k, v in train_infos.items():
+            # Convert to float if numpy type
+            if isinstance(v, (np.ndarray, np.generic)):
+                v = float(v)
+            elif isinstance(v, torch.Tensor):
+                v = float(v.item())
+            
+            # Store in metrics dictionary for JSON saving
+            self.metrics[k]["steps"].append(int(total_num_steps))
+            self.metrics[k]["values"].append(v)
+            
             if self.use_wandb:
                 wandb.log({k: v}, step=total_num_steps)
             else:
@@ -166,7 +181,33 @@ class Runner(object):
         """
         for k, v in env_infos.items():
             if len(v)>0:
+                mean_val = float(np.mean(v))
+                
+                # Store in metrics dictionary for JSON saving
+                self.metrics[k]["steps"].append(int(total_num_steps))
+                self.metrics[k]["values"].append(mean_val)
+                
                 if self.use_wandb:
-                    wandb.log({k: np.mean(v)}, step=total_num_steps)
+                    wandb.log({k: mean_val}, step=total_num_steps)
                 else:
-                    self.writter.add_scalars(k, {k: np.mean(v)}, total_num_steps)
+                    self.writter.add_scalars(k, {k: mean_val}, total_num_steps)
+    
+    def save_metrics_json(self):
+        """
+        Save metrics to JSON file in DISSCv2 format.
+        Saves to metrics.json in the run directory.
+        """
+        metrics_file = os.path.join(self.run_dir, "metrics.json")
+        
+        # Convert defaultdict to regular dict and ensure all values are JSON serializable
+        metrics_dict = {}
+        for k, v in self.metrics.items():
+            metrics_dict[k] = {
+                "steps": [int(s) for s in v["steps"]],
+                "values": [float(val) for val in v["values"]]
+            }
+        
+        with open(metrics_file, 'w') as f:
+            json.dump(metrics_dict, f, indent=2)
+        
+        print(f"Metrics saved to {metrics_file}")

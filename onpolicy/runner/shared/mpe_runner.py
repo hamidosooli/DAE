@@ -69,13 +69,13 @@ class MPERunner(Runner):
                         agent_k = 'agent%i/individual_rewards' % agent_id
                         env_infos[agent_k] = idv_rews
 
-                train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
-                print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
+                train_infos["return_mean"] = np.mean(self.buffer.rewards) * self.episode_length
+                print("average episode rewards is {}".format(train_infos["return_mean"]))
                 self.log_train(train_infos, total_num_steps)
                 if self.env_name == "MPE" or self.env_name == "VMAS":
                     self.log_env(env_infos, total_num_steps)
                 f = open(self.name,'a')
-                f.write(str(train_infos["average_episode_rewards"])+'\n')
+                f.write(str(train_infos["return_mean"])+'\n')
                 f.close() 
 
             # eval
