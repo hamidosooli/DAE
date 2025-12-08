@@ -20,4 +20,5 @@ python train/train_vmas.py \
     --lr=7e-4 \
     --critic_lr=7e-4 \
     --wandb_name="DISSCv2" \
-    --user_name="hamid-osooli"
+    --user_name="hamid-osooli" \
+    --save_interval=2000
