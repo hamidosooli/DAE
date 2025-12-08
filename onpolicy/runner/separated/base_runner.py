@@ -143,6 +143,9 @@ class Runner(object):
             torch.save(policy_actor.state_dict(), str(self.save_dir) + "/actor_agent" + str(agent_id) + ".pt")
             policy_critic = self.trainer[agent_id].policy.critic
             torch.save(policy_critic.state_dict(), str(self.save_dir) + "/critic_agent" + str(agent_id) + ".pt")
+        
+        # Also save metrics JSON whenever policies are saved
+        self.save_metrics_json()
 
     def restore(self):
         for agent_id in range(self.num_agents):

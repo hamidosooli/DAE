@@ -142,6 +142,9 @@ class Runner(object):
         torch.save(policy_actor.state_dict(), str(self.save_dir) + "/actor.pt")
         policy_critic = self.trainer.policy.critic
         torch.save(policy_critic.state_dict(), str(self.save_dir) + "/critic.pt")
+        
+        # Also save metrics JSON whenever policies are saved
+        self.save_metrics_json()
 
     def restore(self):
         """Restore policy's networks from a saved model."""

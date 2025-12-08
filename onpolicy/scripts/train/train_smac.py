@@ -164,9 +164,6 @@ def main(args):
     if all_args.use_eval and eval_envs is not envs:
         eval_envs.close()
 
-    # Save metrics to JSON file (similar to DISSCv2)
-    runner.save_metrics_json()
-
     if all_args.use_wandb:
         run.finish()
     else:
