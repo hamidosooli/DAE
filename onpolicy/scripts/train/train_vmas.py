@@ -44,8 +44,8 @@ def parse_args(args, parser):
                         default='navigation', help="Which VMAS scenario to run on")
     parser.add_argument('--num_agents', type=int,
                         default=2, help="number of agents")
-    parser.add_argument('--episode_length', type=int,
-                        default=100, help="episode length")
+    # parser.add_argument('--episode_length', type=int,
+    #                     default=100, help="episode length")
 
     all_args = parser.parse_known_args(args)[0]
 
