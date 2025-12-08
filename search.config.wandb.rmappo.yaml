@@ -27,100 +27,33 @@ parameters:
   n_training_threads:
     value: 1
   n_rollout_threads:
-    values: [8, 16, 32]
+    value: 8
   num_env_steps:
     value: 10000000
   
-  # Network parameters
+  # Network parameters (similar to hidden_dim in DISSCv2)
   hidden_size:
-    values: [64, 128, 256]
-  layer_N:
-    values: [1, 2]
-  use_ReLU:
-    value: true
+    values: [64, 128]
+  
+  # Learning rate (similar to DISSCv2)
+  lr:
+    values: [0.0001, 0.0003, 0.0005]
+  critic_lr:
+    values: [0.0001, 0.0003, 0.0005]
+  
+  # Reward normalization (similar to standardise_rewards in DISSCv2)
   use_valuenorm:
     values: [true, false]
   use_popart:
     values: [true, false]
-  use_feature_normalization:
-    value: true
-  use_orthogonal:
-    value: true
-  gain:
-    values: [0.01, 0.1]
   
-  # Recurrent parameters
+  # Recurrent policy (similar to use_rnn in DISSCv2)
   use_recurrent_policy:
-    value: true
-  use_naive_recurrent_policy:
-    value: false
-  recurrent_N:
-    values: [1, 2]
-  data_chunk_length:
-    values: [10, 20]
-  
-  # Optimizer parameters
-  lr:
-    values: [1e-4, 3e-4, 5e-4, 7e-4, 1e-3]
-  critic_lr:
-    values: [1e-4, 3e-4, 5e-4, 7e-4, 1e-3]
-  opti_eps:
-    value: 1e-5
-  weight_decay:
-    values: [0, 1e-5]
-  
-  # PPO parameters
-  ppo_epoch:
-    values: [5, 10, 15]
-  clip_param:
-    values: [0.1, 0.2, 0.3]
-  num_mini_batch:
-    values: [1, 2, 4]
-  entropy_coef:
-    values: [0.001, 0.01, 0.1]
-  value_loss_coef:
-    values: [0.5, 1.0, 2.0]
-  use_max_grad_norm:
-    value: true
-  max_grad_norm:
-    values: [0.5, 1.0, 10.0]
-  use_gae:
-    value: true
-  gamma:
-    values: [0.95, 0.99, 0.999]
-  gae_lambda:
-    values: [0.9, 0.95, 0.99]
-  use_huber_loss:
-    value: true
-  huber_delta:
-    values: [1.0, 10.0]
-  use_value_active_masks:
-    value: false
-  use_policy_active_masks:
-    value: true
-  
-  # Training settings
-  use_centralized_V:
-    value: true
-  share_policy:
-    value: true
-  use_linear_lr_decay:
     values: [true, false]
   
-  # Logging and evaluation
-  # Note: use_wandb is handled specially in the wrapper (always enabled for sweeps)
-  user_name:
-    value: mappo
-  save_interval:
-    value: 1
-  log_interval:
-    value: 5
-  use_eval:
-    value: true
-  eval_interval:
-    value: 25
-  eval_episodes:
-    value: 32
+  # Entropy coefficient (same as DISSCv2)
+  entropy_coef:
+    values: [0.01, 0.001]
   
   # DAE specific parameters
   beta:
@@ -130,7 +63,21 @@ parameters:
   num_rew:
     values: [1, 2, 3]
   
-  # Hardware
+  # Fixed parameters
+  use_ReLU:
+    value: true
+  use_feature_normalization:
+    value: true
+  use_orthogonal:
+    value: true
+  use_centralized_V:
+    value: true
+  share_policy:
+    value: true
+  use_wandb:
+    value: true
+  user_name:
+    value: mappo
   cuda:
     value: true
   cuda_deterministic:
